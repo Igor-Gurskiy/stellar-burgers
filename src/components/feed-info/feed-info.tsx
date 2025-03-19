@@ -1,14 +1,12 @@
 import { FC } from 'react';
 
-import { useEffect } from 'react';
 import { TOrder } from '@utils-types';
 import { FeedInfoUI } from '../ui/feed-info';
-import { useSelector, useDispatch } from '../../services/store';
+import { useSelector } from '../../services/store';
 import {
   selectOrders,
   selectTotalToday,
-  selectTotal,
-  fetchFeeds
+  selectTotal
 } from '../../services/slices/Feeds';
 
 const getOrders = (orders: TOrder[], status: string): number[] =>

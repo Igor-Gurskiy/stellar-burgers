@@ -13,7 +13,7 @@ import { TUser, TOrder } from '../../utils/types';
 import { setCookie, deleteCookie } from '../../utils/cookie';
 
 type TProfileState = {
-  user: TUser;
+  user: TUser | null;
   isLoadingOrder: boolean;
   isLoadingRegistration: boolean;
   error: string;
@@ -22,10 +22,7 @@ type TProfileState = {
 };
 
 const initialState: TProfileState = {
-  user: {
-    name: '',
-    email: ''
-  },
+  user: null,
   isLoadingOrder: false,
   isLoadingRegistration: false,
   error: '',
@@ -33,38 +30,28 @@ const initialState: TProfileState = {
   userOrders: []
 };
 
-export const getUser = createAsyncThunk(
-  'user/fetch',
-  async () => await getUserApi()
-);
-export const updateUser = createAsyncThunk(
-  'user/update',
-  async (user: Partial<TRegisterData>) => await updateUserApi(user)
-);
-export const loginUserThunk = createAsyncThunk(
-  'user/login',
-  async (data: TLoginData) =>
-    await loginUserApi(data).then((data) => {
-      setCookie('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      return data;
-    })
-);
-export const fetchOrders = createAsyncThunk(
-  'user/orders',
-  async () => await getOrdersApi()
-);
-export const registerUser = createAsyncThunk(
-  'user/register',
+export const registUser = createAsyncThunk(
+  'profile/register',
   async (data: TRegisterData) =>
     await registerUserApi(data).then((data) => {
       setCookie('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
-      return data;
+      return data.user;
     })
 );
+
+export const loginUser = createAsyncThunk(
+  'profile/login',
+  async (data: TLoginData) =>
+    await loginUserApi(data).then((data) => {
+      setCookie('accessToken', data.accessToken);
+      localStorage.setItem('refreshToken', data.refreshToken);
+      return data.user;
+    })
+);
+
 export const logoutUser = createAsyncThunk(
-  'user/logout',
+  'profile/logout',
   async () =>
     await logoutApi().then(() => {
       localStorage.removeItem('refreshToken');
@@ -72,61 +59,104 @@ export const logoutUser = createAsyncThunk(
     })
 );
 
+export const getOrders = createAsyncThunk(
+  'profile/orders',
+  async () => await getOrdersApi()
+);
+
+export const getUser = createAsyncThunk(
+  'profile/fetch',
+  async () => await getUserApi()
+);
+
+export const updateUser = createAsyncThunk(
+  'profile/update',
+  async (user: Partial<TRegisterData>) => await updateUserApi(user)
+);
+
 export const ProfileSlice = createSlice({
-  name: 'profileData',
+  name: 'profile',
   initialState,
-  reducers: {
-    resetError: (state) => {
-      state.error = '';
-    }
-  },
+  reducers: {},
   selectors: {
     selectUser: (state) => state.user,
     selectUserOrders: (state) => state.userOrders,
-    selectAuthChecked: (state) => state.isAuthChecked,
+    selectIsAuthChecked: (state) => state.isAuthChecked,
     selectIsLoadingRegistration: (state) => state.isLoadingRegistration,
     selectIsLoadingOrder: (state) => state.isLoadingOrder
   },
   extraReducers: (builder) => {
     builder
+      .addCase(registUser.pending, (state) => {
+        state.isLoadingRegistration = true;
+      })
+      .addCase(registUser.fulfilled, (state, action) => {
+        state.isLoadingRegistration = false;
+        state.user = action.payload;
+      })
+      .addCase(registUser.rejected, (state, action) => {
+        state.isLoadingRegistration = false;
+        state.error = action.error.message || '';
+      })
+      .addCase(loginUser.pending, (state) => {
+        state.isLoadingRegistration = true;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.isLoadingRegistration = false;
+        state.user = action.payload;
+        state.isAuthChecked = true;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.isLoadingRegistration = false;
+        state.error = action.error.message || '';
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.error = action.error.message || '';
+      })
+      .addCase(getUser.pending, (state) => {
+        state.isAuthChecked = false;
+      })
       .addCase(getUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.isAuthChecked = true;
       })
-      .addCase(loginUserThunk.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+      .addCase(getUser.rejected, (state, action) => {
+        state.error = action.error.message || '';
         state.isAuthChecked = true;
+        state.error = action.error.message || '';
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
-        state.isAuthChecked = true;
-        state.isLoadingRegistration = false;
       })
-      .addCase(registerUser.pending, (state) => {
+      .addCase(updateUser.rejected, (state, action) => {
+        state.error = action.error.message || '';
+        state.isAuthChecked = true;
+        state.user = null;
+      })
+      .addCase(updateUser.pending, (state) => {
         state.isLoadingRegistration = true;
-        state.isAuthChecked = false;
       })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.isLoadingRegistration = false;
-        state.isAuthChecked = false;
-        state.error = action.error?.message || '';
-      })
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.user = { name: '', email: '' };
-        state.isAuthChecked = true;
-      })
-      .addCase(fetchOrders.fulfilled, (state, action) => {
+      .addCase(getOrders.fulfilled, (state, action) => {
         state.userOrders = action.payload;
+        state.isLoadingOrder = false;
+      })
+      .addCase(getOrders.pending, (state) => {
+        state.isLoadingOrder = true;
+      })
+      .addCase(getOrders.rejected, (state, action) => {
+        state.error = action.error.message || '';
       });
   }
 });
 
 export const {
   selectUser,
-  selectAuthChecked,
+  selectIsAuthChecked,
   selectUserOrders,
   selectIsLoadingOrder,
   selectIsLoadingRegistration
 } = ProfileSlice.selectors;
 export default ProfileSlice.reducer;
-export const { resetError } = ProfileSlice.actions;

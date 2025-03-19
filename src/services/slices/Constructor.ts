@@ -24,7 +24,10 @@ export const initialState: TConstructorState = {
 
 export const makeOrder = createAsyncThunk(
   'composition/makeOrder',
-  async (ingredients: string[]) => await orderBurgerApi(ingredients)
+  async (ingredients: string[]) => {
+    const res = await orderBurgerApi(ingredients);
+    return res;
+  }
 );
 
 export const ConstructorSlice = createSlice({
@@ -91,10 +94,14 @@ export const ConstructorSlice = createSlice({
     builder
       .addCase(makeOrder.pending, (state) => {
         state.orderRequest = true;
+        state.error = null;
       })
       .addCase(makeOrder.fulfilled, (state, action) => {
         state.orderRequest = false;
         state.orderModalData = action.payload.order;
+        state.composition.bun = null;
+        state.composition.ingredients = [];
+        state.error = null;
       })
       .addCase(makeOrder.rejected, (state, action) => {
         state.orderRequest = false;

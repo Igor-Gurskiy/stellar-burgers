@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getOrderByNumberApi } from '../../utils/burger-api';
 import { TOrder } from '../../utils/types';
-import { selectIsLoading } from './Ingredients';
 
 export const fetchOrder = createAsyncThunk(
   'order/fetch',
@@ -36,9 +35,10 @@ export const OrderSlice = createSlice({
         state.order = action.payload.orders[0];
         state.orderRequest = false;
       })
-      .addCase(fetchOrder.rejected, (state) => {
+      .addCase(fetchOrder.rejected, (state, action) => {
         state.order = null;
         state.orderRequest = false;
+        state.error = action.error.message || '';
       });
   }
 });
