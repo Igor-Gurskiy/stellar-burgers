@@ -59,20 +59,11 @@ export const logoutUser = createAsyncThunk(
     })
 );
 
-export const getOrders = createAsyncThunk(
-  'profile/orders',
-  async () => await getOrdersApi()
-);
+export const getOrders = createAsyncThunk('profile/orders', getOrdersApi);
 
-export const getUser = createAsyncThunk(
-  'profile/fetch',
-  async () => await getUserApi()
-);
+export const getUser = createAsyncThunk('profile/fetch', getUserApi);
 
-export const updateUser = createAsyncThunk(
-  'profile/update',
-  async (user: Partial<TRegisterData>) => await updateUserApi(user)
-);
+export const updateUser = createAsyncThunk('profile/update', updateUserApi);
 
 export const ProfileSlice = createSlice({
   name: 'profile',
@@ -83,7 +74,8 @@ export const ProfileSlice = createSlice({
     selectUserOrders: (state) => state.userOrders,
     selectIsAuthChecked: (state) => state.isAuthChecked,
     selectIsLoadingRegistration: (state) => state.isLoadingRegistration,
-    selectIsLoadingOrder: (state) => state.isLoadingOrder
+    selectIsLoadingOrder: (state) => state.isLoadingOrder,
+    selectError: (state) => state.error
   },
   extraReducers: (builder) => {
     builder
@@ -157,6 +149,7 @@ export const {
   selectIsAuthChecked,
   selectUserOrders,
   selectIsLoadingOrder,
-  selectIsLoadingRegistration
+  selectIsLoadingRegistration,
+  selectError
 } = ProfileSlice.selectors;
 export default ProfileSlice.reducer;

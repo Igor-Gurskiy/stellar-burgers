@@ -23,6 +23,9 @@ import { fetchIngredients } from '../../services/slices/Ingredients';
 const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const locationState = location.state as { background?: Location };
+  const background = locationState && locationState.background;
+  // console.log(background);
 
   const number = location.pathname.match(/\/(\d+)$/)?.[1];
   const handleModalClose = () => {
@@ -37,7 +40,7 @@ const App = () => {
   return (
     <div className={styles.app}>
       <AppHeader />
-      <Routes location={location}>
+      <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route
@@ -88,41 +91,83 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route path='*' element={<NotFound404 />} />
-
         <Route
           path={`/feed/:number`}
           element={
-            <Modal
-              title={`#${String(number).padStart(6, '0')}`}
-              onClose={handleModalClose}
-            >
+            <div className={styles.detailPageWrap}>
+              <p
+                className={`text text_type_digits-default ${styles.detailHeader}`}
+              >
+                #{String(number).padStart(6, '0')}
+              </p>
               <OrderInfo />
-            </Modal>
+            </div>
           }
         />
-
         <Route
           path='/ingredients/:id'
           element={
-            <Modal title='Детали ингредиента' onClose={handleModalClose}>
+            <div className={styles.detailPageWrap}>
+              <p
+                className={`text text_type_digits-default ${styles.detailHeader}`}
+              >
+                Детали ингредиента
+              </p>
               <IngredientDetails />
-            </Modal>
+            </div>
           }
         />
-
         <Route
           path={`/profile/orders/:number`}
           element={
-            <Modal
-              title={`#${String(number).padStart(6, '0')}`}
-              onClose={handleModalClose}
-            >
+            <div className={styles.detailPageWrap}>
+              <p
+                className={`text text_type_digits-default ${styles.detailHeader}`}
+              >
+                #{String(number).padStart(6, '0')}
+              </p>
               <OrderInfo />
-            </Modal>
+            </div>
           }
         />
+        <Route path='*' element={<NotFound404 />} />
       </Routes>
+      {background && (
+        <Routes>
+          <Route
+            path={`/feed/:number`}
+            element={
+              <Modal
+                title={`#${String(number).padStart(6, '0')}`}
+                onClose={handleModalClose}
+              >
+                <OrderInfo />
+              </Modal>
+            }
+          />
+
+          <Route
+            path='/ingredients/:id'
+            element={
+              <Modal title='Детали ингредиента' onClose={handleModalClose}>
+                <IngredientDetails />
+              </Modal>
+            }
+          />
+
+          <Route
+            path={`/profile/orders/:number`}
+            element={
+              <Modal
+                title={`#${String(number).padStart(6, '0')}`}
+                onClose={handleModalClose}
+              >
+                <OrderInfo />
+              </Modal>
+            }
+          />
+        </Routes>
+      )}
     </div>
   );
 };

@@ -11,7 +11,7 @@ export interface IIngredientsState {
 
 export const fetchIngredients = createAsyncThunk(
   'ingredients/fetch',
-  async () => await getIngredientsApi()
+  getIngredientsApi
 );
 
 const initialState: IIngredientsState = {
