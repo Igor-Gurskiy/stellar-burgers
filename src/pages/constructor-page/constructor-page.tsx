@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from '../../services/store';
-
+import store from '../../services/store';
 import styles from './constructor-page.module.css';
 import { BurgerIngredients } from '../../components';
 import { BurgerConstructor } from '../../components';
@@ -15,7 +15,6 @@ export const ConstructorPage: FC = () => {
     dispatch(fetchIngredients());
   }, [dispatch]);
   const isIngredientsLoading = useSelector(selectIsLoading);
-
   return (
     <>
       {isIngredientsLoading ? (

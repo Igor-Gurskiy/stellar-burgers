@@ -21,7 +21,7 @@ type TProfileState = {
   userOrders: TOrder[];
 };
 
-const initialState: TProfileState = {
+export const initialState: TProfileState = {
   user: null,
   isLoadingOrder: false,
   isLoadingRegistration: false,
@@ -118,7 +118,6 @@ export const ProfileSlice = createSlice({
       .addCase(getUser.rejected, (state, action) => {
         state.error = action.error.message || '';
         state.isAuthChecked = true;
-        state.error = action.error.message || '';
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
